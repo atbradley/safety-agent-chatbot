@@ -1,12 +1,11 @@
-import httpx
-import openai
-from sanic import Sanic
-from sanic.response import json
-from json import dumps as jsondump, loads as jsonloads
 
+from json import dumps as jsondump, loads as jsonloads
 import logging
 from logging.handlers import RotatingFileHandler
 
+import httpx
+from sanic import Sanic
+from sanic.response import json
 
 from settings import api_key, base_url, model_id
 
