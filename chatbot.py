@@ -27,12 +27,6 @@ logger.addHandler(file_handler)
 
 app = Sanic("ChatProxy")
 
-llm = openai.OpenAI(
-    api_key=api_key,
-    base_url=base_url,
-)
-
-logger.debug("Is this working at all?")
 
 @app.post("/chat")
 async def chat(request):
@@ -50,7 +44,6 @@ async def chat(request):
 
     headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer '+api_key}
 
-
     payload = {
         "model": model_id,
         "messages": msgs,
@@ -59,12 +52,6 @@ async def chat(request):
 
     response = httpx.post(base_url + "/chat/completions", headers=headers, json=payload, timeout=60)
 
-    
-    # print(headers)
-    # print(base_url + "/chat/completions")
-    print("Payload:", jsondump(payload))
-    # print(response)
-    # print(response.text)
     logger.debug(response.text)
     response = response.json()
     resp = request.json + [response['choices'][0]['message']]
