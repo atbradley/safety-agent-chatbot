@@ -1,9 +1,10 @@
 import json
-import re
-import requests
-from datetime import datetime
 import logging
+import re
+from datetime import datetime
 from typing import Optional
+
+import requests
 
 # TODO: Put this someplace better.
 logging.basicConfig(
@@ -60,25 +61,11 @@ class Tools:
         if not _check_policy_format(policy_number):
             raise ValueError(r"Not a valid policy number: %s" % (policy_number,))
 
-        url = "https://safety.devsic.com/policy/policy_info/policy_info_detail.pl"
+        url = f"https://avc.devsic.com/pwrdchat/tools/policy_detail/{policy_number}"
 
         try:
-            response = requests.get(
-                url, params={"policy_num": policy_number}, verify=False
-            )
+            response = requests.get(url, verify=False)
             outp = response.json()
-            today = datetime.today().strftime("%Y-%m-%d")
-
-            outp = list(
-                filter(lambda x: x.get("end_date", "9999-12-31") >= today, outp)
-            )
-            outp.sort(key=lambda policy: policy["end_date"])
-            outp = outp[0]
-            del outp[
-                "policy_num_as400"
-            ]  # Don't need this and will probably just confuse the model.
-            outp["powerdesk_url"] = _powerdesk_link(policy_number)
-
             return json.dumps(outp)
         except Exception as e:
             raise e
@@ -88,7 +75,7 @@ class Tools:
         policy_type: str,
         # policy_num: Optional[str] = None,
         insured: str,
-        #eff_date: Optional[str] = None,
+        # eff_date: Optional[str] = None,
         city: str,
         state: str,
         zipcode: str,
@@ -115,7 +102,8 @@ class Tools:
         # https://safety.stagesic.com/policy/search.pl?city=mansfield&insured=test&test=1
         params = dict(
             filter(
-                lambda x: x[0] != "self" and type(x[1]) in [int, str] and x[1] != "", locals().items()
+                lambda x: x[0] != "self" and type(x[1]) in [int, str] and x[1] != "",
+                locals().items(),
             )
         )
         params["test"] = 1  # TODO: distinguish between test and prod.
@@ -134,10 +122,12 @@ class Tools:
             "Commercial Umbrella": "46",
         }
 
+        params["policy_type"] = params["policy_type"].title()
+
         if params["policy_type"] == "Auto":
             auto = True
             del params["policy_type"]
-        elif params["policy_type"] == "OTA":
+        elif params["policy_type"] == "Ota":
             del params["policy_type"]
         elif params["policy_type"] in auto_pol_types.keys():
             params["policy_type"] = auto_pol_types[params["policy_type"]]
@@ -155,17 +145,23 @@ class Tools:
         )
         print(url)
         searchresp = requests.get(url, params=params, verify=False)
-        outp = searchresp.json()
-
-        if auto:
-            outp = outp["policysearch"]
-
-        pol_types = {v: k for k, v in (auto_pol_types|ota_pol_types).items()}
         
+        try:
+            outp = searchresp.json()
+            if auto:
+                outp = outp["policysearch"]
+        except KeyError as e:
+            # We might not find "policysearch"
+            return json.dumps({'error': "No results."})
+        except Exception as e:
+            return json.dumps({'error': e})
+
+        pol_types = {v: k for k, v in (auto_pol_types | ota_pol_types).items()}
+
         for pol in outp:
             pol["powerdesk_url"] = _powerdesk_link(pol["policy_num"])
             pol["policy_type"] = pol_types[str(pol["risk_type"])]
-            del(pol["risk_type"])
+            del pol["risk_type"]
 
         return json.dumps(outp)
 
