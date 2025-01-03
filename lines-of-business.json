@@ -1,0 +1,191 @@
+{
+  "PRV": {
+    "Line of Business": "auto",
+    "Type": "Auto Policy",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "ANH": {
+    "Line of Business": "auto",
+    "Type": "Auto Policy",
+    "State": "NH",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "AME": {
+    "Line of Business": "auto",
+    "Type": "Auto Policy",
+    "State": "ME",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "BMA": {
+    "Line of Business": "bop",
+    "Type": "Businessowners",
+    "State": "MA",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "BNH": {
+    "Line of Business": "bop",
+    "Type": "Businessowners",
+    "State": "NH",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "BME": {
+    "Line of Business": "bop",
+    "Type": "Businessowners",
+    "State": "ME",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "BP": {
+    "Line of Business": "bop",
+    "Type": "Businessowners",
+    "State": "MA",
+    "Commercial": "1",
+    "Inspire": "1"
+  },
+  "COM": {
+    "Line of Business": "auto",
+    "Type": "Commercial Auto Policy",
+    "State": "MA",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "CNH": {
+    "Line of Business": "auto",
+    "Type": "Commercial Auto Policy",
+    "State": "NH",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "CME": {
+    "Line of Business": "auto",
+    "Type": "Commercial Auto Policy",
+    "State": "ME",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "CP": {
+    "Line of Business": "bop",
+    "Type": "Commercial Property",
+    "State": "MA",
+    "Commercial": "1",
+    "Inspire": "1"
+  },
+  "CMU": {
+    "Line of Business": "cmu",
+    "Type": "Commercial Umbrella",
+    "State": "MA",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "CNU": {
+    "Line of Business": "cmu",
+    "Type": "Commercial Umbrella",
+    "State": "NH",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "UCM": {
+    "Line of Business": "cmu",
+    "Type": "Commercial Umbrella",
+    "State": "ME",
+    "Commercial": "1",
+    "Inspire": "-"
+  },
+  "CU": {
+    "Line of Business": "cmu",
+    "Type": "Commercial Umbrella",
+    "State": "MA",
+    "Commercial": "1",
+    "Inspire": "1"
+  },
+  "DF": {
+    "Line of Business": "dfire",
+    "Type": "Dwelling Fire",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "1"
+  },
+  "DMA": {
+    "Line of Business": "dfire",
+    "Type": "Dwelling Fire",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "DNH": {
+    "Line of Business": "dfire",
+    "Type": "Dwelling Fire",
+    "State": "NH",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "DME": {
+    "Line of Business": "dfire",
+    "Type": "Dwelling Fire",
+    "State": "ME",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "HO": {
+    "Line of Business": "home",
+    "Type": "Homeowners Policy",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "1"
+  },
+  "HMA": {
+    "Line of Business": "home",
+    "Type": "Homeowners Policy",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "HNH": {
+    "Line of Business": "home",
+    "Type": "Homeowners Policy",
+    "State": "NH",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "HME": {
+    "Line of Business": "home",
+    "Type": "Homeowners Policy",
+    "State": "ME",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "UM": {
+    "Line of Business": "umb",
+    "Type": "Umbrella Policy",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "1"
+  },
+  "UMA": {
+    "Line of Business": "umb",
+    "Type": "Umbrella Policy",
+    "State": "MA",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "UNH": {
+    "Line of Business": "umb",
+    "Type": "Umbrella Policy",
+    "State": "NH",
+    "Commercial": "-",
+    "Inspire": "-"
+  },
+  "UME": {
+    "Line of Business": "umb",
+    "Type": "Umbrella Policy",
+    "State": "ME",
+    "Commercial": "-",
+    "Inspire": "-"
+  }
+}
