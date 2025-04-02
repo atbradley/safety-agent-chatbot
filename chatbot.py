@@ -1,40 +1,27 @@
-import asyncio
 import logging
-import os
 import re
-import sys
 from datetime import date, datetime
 from json import dumps as jdump
 from logging.handlers import RotatingFileHandler
-from urllib.parse import unquote_plus
 
 import httpx
-import pyodbc
 
-# Handles memoization for async functions.
-from async_lru import alru_cache
-from bs4 import BeautifulSoup
 from sanic import Sanic
 from sanic.response import json
 from smoltalk import Toolbox
 
 from pwrdesk_tools import Pwrdesk_Tools
 from settings import (
-    AUTO_PREFIXES,
     AUTO_RELOAD,
     DEBUG,
     LLM_API_KEY,
     LLM_BASE_URL,
     LLM_MODEL,
     LOG_LEVEL,
-    POWERDESK_ROOT,
     api_base_url,
     api_key,
     base_url,
-    cstring,
-    lines_of_business,
     model_id,
-    sock,
 )
 
 
@@ -44,7 +31,7 @@ def json_serial(obj):
         return obj.isoformat()
 
 
-mssql = pyodbc.connect(cstring)
+# mssql = pyodbc.connect(cstring)
 
 # Set up logging to a file
 logger = logging.getLogger(__name__)
@@ -82,13 +69,6 @@ app = Sanic("Pwrdesk_Chat")
 async def on_before_server_start(app: Sanic):
     logger.info("Starting chatbot server.?")
 
-
-@app.route(base_url + "/tools/policy_detail/<policy_number:[a-zA-Z]{3}[0-9]{7}>")
-async def pwrdesk_detail(policy_number: str) -> dict:...
-
-
-@app.route(base_url + "/tools/minifile/search/<s:str>")
-async def minifile_search(request, s: str):...
     
 @app.post(base_url + "/chat")
 async def chat(request):
