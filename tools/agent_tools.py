@@ -2,9 +2,11 @@ import json
 import logging
 import re
 from datetime import datetime
-from typing import Optional
+from urllib.parse import quote_plus
 
 import requests
+
+TOOLSROOT = "https://safety.devsic.com/apis/pwrdesk_chat/tools/"
 
 # TODO: Put this someplace better.
 logging.basicConfig(
@@ -18,17 +20,6 @@ logging.basicConfig(
 def _check_policy_format(policy_number):
     logging.debug("Checking format of policy number %s" % policy_number)
     return bool(re.match(r"([a-z]{3})?\d{7}", policy_number, re.IGNORECASE))
-
-
-def _get_auto_or_ota_policy(self, policy_number: str) -> str:
-    """
-    Takes a policy number and returns either 'AUTO' for auto policies or 'OTA' for other policies.
-    """
-    return (
-        "AUTO"
-        if policy_number[:3] in ["PRV", "ANH", "AME", "COM", "CNH", "CME"]
-        else "OTA"
-    )
 
 
 def _powerdesk_link(policy_number: str) -> str:
@@ -45,123 +36,61 @@ class Tools:
     def __init__(self):
         pass
 
-    def get_policy_data(self, policy_number: str) -> str:
+    def get_policy_data(self, policy_number: str, user: str, session: str) -> str:
         """
         Return information about an individual insurance policy. policy_number is the number
         of the policy you need information for.
 
         Note that the exact format of the information, and the kind of information returned,
-        may vary by the type of policy.
+        may vary by the type of policy, but should always include billing information, including
+        AutoPay eligibility, due dates and amounts, and installment plan details.
 
-        :param policy_number The policy number you need information about.
+        :param policy_number: The policy number you need information about.
+        :param user: A user ID. Another assistant will provide this to you.
+        :param session: A session ID. Another assistant will provide this to you.
         """
         # TODO: check whether we're in prod. How?
-        production = False
+        # production = False
 
         if not _check_policy_format(policy_number):
             raise ValueError(r"Not a valid policy number: %s" % (policy_number,))
 
-        url = f"https://avc.devsic.com/pwrdchat/tools/policy_detail/{policy_number}"
+        url = f"{TOOLSROOT}policy_detail/{policy_number}"
 
         try:
-            response = requests.get(url, verify=False)
+            response = requests.get(
+                url, params={"cert": user, "session": session}, verify=False
+            )
             outp = response.json()
             return json.dumps(outp)
         except Exception as e:
             raise e
 
-    def search_policies(
-        self,
-        policy_type: str,
-        # policy_num: Optional[str] = None,
-        insured: str,
-        # eff_date: Optional[str] = None,
-        city: str,
-        state: str,
-        zipcode: str,
-    ) -> str:
+    def search_policies(self, search_keywords: str, user: str, session: str) -> str:
         """
         Search for a policy using one or more of the parameters listed below.
 
-        If this returns more than five policies, you should ask the user for more details to narrow down the search.
-
-        The policy_type parameter must be one of: "Auto", "OTA", "Personal Auto", "Commercial Auto", "Homeowner",
-        "Dwelling Fire", "Umbrella", "Business Owner", "Commercial Umbrella".
+        If this returns more than five policies, you will be prompted to ask the user for more details to narrow down the search.
 
         Be sure to use the city, state, and zipcode parameters if you have the relevant information.
 
-        :param policy_type
-        :param insured: The policyholder's full or partial name. Do not include titles (like "Mr.", "Ms.", or "Dr.")
-        :param eff_date: The effective date of the policy.
-        :param city: The policyholder's city. Set to an empty string if you don't know this.
-        :param state: The policyholder's state. Set to an empty string if you don't know this.
-        :param zipcode: The policyholder's zip code. Set to an empty string if you don't know this.
+        The search_keywords parameter is a string-separated list. To search for "John Smith in Boston" set search_keywords to
+        "John Smith Boston". To search for "John Smith on Custom House Street in Boston", set search_keywords to "john smith
+        custom house boston".
+
+        :param search_keywords: Any parts of the insured's name or address that are available, space-separated.
+        :param user: A user ID. This will be provided by another assistant.
+        :param session: A session id, provided by another assistant.
         """
-        # The model's usage of this tool is flaky. Better docstring/system prompt?
-        # PPA (01) CA (10) HO (24) DF (22) UMB (44) BOP (75) CMU (46)
-        # https://safety.stagesic.com/policy/search.pl?city=mansfield&insured=test&test=1
-        params = dict(
-            filter(
-                lambda x: x[0] != "self" and type(x[1]) in [int, str] and x[1] != "",
-                locals().items(),
-            )
+        url = f"{TOOLSROOT}minifile/search/{quote_plus(search_keywords)}"
+        searchresp = requests.get(
+            url, params={"cert": user, "session": session}, verify=False
         )
-        params["test"] = 1  # TODO: distinguish between test and prod.
-        auto = False
 
-        auto_pol_types = {
-            "Personal Auto": "01",
-            "Commercial Auto": "10",
-        }
-
-        ota_pol_types = {
-            "Homeowner": "24",
-            "Dwelling Fire": "22",
-            "Umbrella": "44",
-            "Business Owner": "75",
-            "Commercial Umbrella": "46",
-        }
-
-        params["policy_type"] = params["policy_type"].title()
-
-        if params["policy_type"] == "Auto":
-            auto = True
-            del params["policy_type"]
-        elif params["policy_type"] == "Ota":
-            del params["policy_type"]
-        elif params["policy_type"] in auto_pol_types.keys():
-            params["policy_type"] = auto_pol_types[params["policy_type"]]
-        elif params["policy_type"] in ota_pol_types.keys():
-            params["policy_type"] = ota_pol_types[params["policy_type"]]
-        else:
-            raise ValueError("Invalid policy type")
-
-        print(params)
-
-        url = (
-            "https://autoclaims-dev.safetyinsurance.com/TESTDP/X0116SRWSR"
-            if auto
-            else "https://safety.devsic.com/policy/search.pl"
-        )
-        print(url)
-        searchresp = requests.get(url, params=params, verify=False)
-        
         try:
             outp = searchresp.json()
-            if auto:
-                outp = outp["policysearch"]
-        except KeyError as e:
-            # We might not find "policysearch"
-            return json.dumps({'error': "No results."})
         except Exception as e:
-            return json.dumps({'error': e})
-
-        pol_types = {v: k for k, v in (auto_pol_types | ota_pol_types).items()}
-
-        for pol in outp:
-            pol["powerdesk_url"] = _powerdesk_link(pol["policy_num"])
-            pol["policy_type"] = pol_types[str(pol["risk_type"])]
-            del pol["risk_type"]
+            return json.dumps({"error": str(e)})
 
         return json.dumps(outp)
 

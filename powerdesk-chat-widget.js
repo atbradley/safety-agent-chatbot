@@ -1,18 +1,3 @@
-// ==UserScript==
-// @name         PowerDesk Chat
-// @namespace    http://avc.safetyinsurance.com/
-// @version      0.1
-// @description  try to take over the world!
-// @author       You
-// @match        https://avc.devsic.com/applications/pwrdesk/*
-// @grant        GM_getResourceText
-// @require      https://avc.devsic.com/applications/pwrdesk_chat/qchat/q-chat.js?6
-// @require      https://unpkg.com/showdown/dist/showdown.min.js
-// @resource     qchatStyles https://avc.devsic.com/applications/pwrdesk_chat/qchat/q-chat.css
-// @resource     mychatStyles https://avc.devsic.com/applications/pwrdesk_chat/screen.css
-// ==/UserScript==
-
-
 (function() {
     'use strict';
 
@@ -36,15 +21,17 @@
 
     async function sendMessage(msgs) {
         //TODO: I'm reusing `chat` too many times here.
-        console.log("Sending message:", chat);
+        let newMsg = msgs.at(-1);
+        console.log("Sending message:", newMsg);
+        console.log("msgs:", msgs);
         console.log("Chatlog:", chatLog);
 
-        chatLog.push(msgs[0])
+        chatLog.push(newMsg)
 
         console.log("Chatlog after first push:", chatLog);
 
         try {
-            const response = await fetch('https://avc.devsic.com/pwrdchat/chat', {
+            const response = await fetch('https://avc.devsic.com/apis/pwrdesk_chat/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -77,8 +64,4 @@
     document.dispatchEvent(new CustomEvent("qChatReceive", {
         detail: { content: "<p>Hello. How can I help?</p>" }
     }));
-
-    var style2 = document.createElement('style');
-    style2.innerHTML = GM_getResourceText("mychatStyles");
-    document.head.appendChild(style2);
 })();

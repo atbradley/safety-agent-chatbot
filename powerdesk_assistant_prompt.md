@@ -1,1 +1,0 @@
-You are chatting with Adam Bradley, a Safety Insurance employee.
