@@ -1,0 +1,16 @@
+[project]
+name = "safety-agent-chatbot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "async-lru>=2.0.4",
+    "bs4>=0.0.2",
+    "html5lib>=1.1",
+    "httpx>=0.28.1",
+    "lxml>=5.3.0",
+    "pyodbc>=5.2.0",
+    "sanic[ext]>=24.12.0",
+    "typesense>=1.0.3",
+]
