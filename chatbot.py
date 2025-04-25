@@ -4,9 +4,7 @@ from datetime import date, datetime
 from json import dumps as jdump
 from logging.handlers import RotatingFileHandler
 
-import httpx
-
-from sanic import Sanic
+from sanic import Request, Sanic, Websocket
 from sanic.response import json
 from smoltalk import Toolbox
 
@@ -55,7 +53,6 @@ logger.addHandler(file_handler)
 # logger.addHandler(stream_handler)
 
 policy_match = re.compile(r"[a-z]{3}[0-9]{7}", re.IGNORECASE)
-SCRIPT_DIR = "/var/www/apps/pwrdesk/"
 
 
 logger.debug("Loading the system prompt.")
@@ -64,19 +61,35 @@ with open("system_prompt.md", "r") as f:
 
 app = Sanic("Pwrdesk_Chat")
 
-
 @app.before_server_start
 async def on_before_server_start(app: Sanic):
     logger.info("Starting chatbot server.?")
 
-    
+@app.websocket("/chatstream")
+async def chatsocket(request: Request, ws: Websocket):
+    #TODO. Also need to update the client.
+    pwrdesk_toolbox = Pwrdesk_Tools(request)
+
+    toolbox = Toolbox(
+        pwrdesk_toolbox,
+        root_url=LLM_BASE_URL,
+        model=LLM_MODEL,
+        api_key=LLM_API_KEY,
+        system_prompt=system_prompt,
+        fail_on_tool_error=True,
+    )
+
+    async for msg in ws:
+        # Talk to the toolbox.
+        await ws.send(msg)
+
 @app.post(base_url + "/chat")
 async def chat(request):
     logger.info("starting chat.")
     policy_number = request.headers.get("X-Policy-Number", False)
     cert = request.headers.get("ssl_client_s_dn")
     session = request.cookies.get("session_id_pwrdesk")
-    
+
     msgs = request.json
     logger.info("Messages received: " + jdump(msgs))
 
@@ -93,7 +106,6 @@ async def chat(request):
         fail_on_tool_error=True,
     )
 
-
     if policy_number:
         msgs.insert(
             0,
@@ -109,33 +121,22 @@ Again, throughout this conversation, "this policy" refers to policy %(policy_num
             },
         )
 
-    headers = {"Content-Type": "application/json", "Authorization": "Bearer " + api_key}
+    response = await toolbox.get_response(msgs)    
 
-    payload = {
-        "model": model_id,
-        "messages": msgs,
-        "tool_ids": ["policy_tools"],
-    }
+    logger.info("Chat response: " + str(response))
 
-    logger.info("Chat payload: " + jdump(payload))
+    if response.get("error", False):
+        return json(response, status=500)
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            api_base_url + "/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=300,
-        )
-
-    logger.info("Chat response: " + response.text)
-    response = response.json()
-    resp = request.json + [response["choices"][0]["message"]]
+    print(response)
+    
+    resp = request.json
     return json(resp)
-
 
 if __name__ == "__main__":
     try:
         from settings import sock
+
         app.run(unix=sock, debug=DEBUG, auto_reload=AUTO_RELOAD)
     except ImportError:
         from settings import host, port
