@@ -69,14 +69,14 @@ app = Sanic("Pwrdesk_Chat")
 async def on_before_server_start(app: Sanic):
     logger.info("Starting chatbot server.?")
 
-    
+
 @app.post(base_url + "/chat")
 async def chat(request):
     logger.info("starting chat.")
     policy_number = request.headers.get("X-Policy-Number", False)
     cert = request.headers.get("ssl_client_s_dn")
     session = request.cookies.get("session_id_pwrdesk")
-    
+
     msgs = request.json
     logger.info("Messages received: " + jdump(msgs))
 
@@ -92,7 +92,6 @@ async def chat(request):
         system_prompt=system_prompt,
         fail_on_tool_error=True,
     )
-
 
     if policy_number:
         msgs.insert(
@@ -136,6 +135,7 @@ Again, throughout this conversation, "this policy" refers to policy %(policy_num
 if __name__ == "__main__":
     try:
         from settings import sock
+
         app.run(unix=sock, debug=DEBUG, auto_reload=AUTO_RELOAD)
     except ImportError:
         from settings import host, port
